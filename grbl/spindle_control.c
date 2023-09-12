@@ -143,7 +143,9 @@ void spindle_set_speed(uint16_t pwm_value)
   uint16_t spindle_compute_pwm_value(float rpm) // Mega2560 PWM register is 16-bit.
   {
 	uint16_t pwm_value;
-	rpm *= (0.010*sys.spindle_speed_ovr); // Scale by spindle speed override value.
+	#ifndef SPINDLE_IS_SERVO
+      rpm *= (0.010*sys.spindle_speed_ovr); // Scale by spindle speed override value.
+    #endif
 	// Calculate PWM register value based on rpm max/min settings and programmed rpm.
 	if ((settings.rpm_min >= settings.rpm_max) || (rpm >= settings.rpm_max)) {
 	  // No PWM range possible. Set simple on/off spindle control pin state.
@@ -151,8 +153,13 @@ void spindle_set_speed(uint16_t pwm_value)
 	  pwm_value = SPINDLE_PWM_MAX_VALUE;
 	} else if (rpm <= settings.rpm_min) {
 	  if (rpm == 0.0) { // S0 disables spindle
-		sys.spindle_speed = 0.0;
-		pwm_value = SPINDLE_PWM_OFF_VALUE;
+		#ifndef SPINDLE_IS_SERVO
+          sys.spindle_speed = 0.0;
+          pwm_value = SPINDLE_PWM_OFF_VALUE;
+        #else
+          sys.spindle_speed = settings.rpm_min;
+          pwm_value = SPINDLE_PWM_MIN_VALUE;
+        #endif
 	  } else { // Set minimum PWM output
 		sys.spindle_speed = settings.rpm_min;
 		pwm_value = SPINDLE_PWM_MIN_VALUE;
@@ -175,9 +182,10 @@ void spindle_set_state(uint8_t state, float rpm)
 {
   if (sys.abort) { return; } // Block during abort.
   if (state == SPINDLE_DISABLE) { // Halt or set spindle direction and rpm.
-  
-    sys.spindle_speed = 0.0;
-    spindle_stop();
+	
+	// For servo send min. PWM instead of deactivate PWM
+	sys.spindle_speed = SPINDLE_PWM_MIN_VALUE;
+	spindle_set_speed(spindle_compute_pwm_value(SPINDLE_PWM_MIN_VALUE));
   
   } else {
   
