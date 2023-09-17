@@ -202,9 +202,10 @@
 #ifdef DEFAULTS_RAMPS_BOARD
   // Only enable the following line if you have - (min) limit switches attached
   //#define INVERT_MIN_LIMIT_PIN_MASK ((1<<X_AXIS) | (1<<Y_AXIS) | (1<<Z_AXIS))
-  #define INVERT_MIN_LIMIT_PIN_MASK ((1<<X_AXIS) | (1<<Y_AXIS))
+  #define INVERT_MIN_LIMIT_PIN_MASK (1<<X_AXIS)
   // Only enable the following line if you have + (max) limit switches attached
   //#define INVERT_MAX_LIMIT_PIN_MASK ((1<<X_AXIS) | (1<<Y_AXIS) | (1<<Z_AXIS))  
+  #define INVERT_MAX_LIMIT_PIN_MASK (1<<Y_AXIS)
 #endif
 
 // Inverts the spindle enable pin from low-disabled/high-enabled to low-enabled/high-disabled. Useful
